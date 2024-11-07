@@ -6,6 +6,23 @@ public class CuentaBancaria {
     private Double balance;
     private String accountType;
 
+    public CuentaBancaria(String bankAccountId, Double balance, String accountType) {
+        this.bankAccountId = bankAccountId;
+        this.balance = balance;
+        this.accountType = accountType;
+    }
+
+    @Override
+    public String toString() {
+        return  bankAccountId +
+                " | " +
+                balance +
+                " | " +
+                accountType ;
+    }
+
+    public CuentaBancaria() {
+    }
 
     public Double getBalance() {
         return balance;

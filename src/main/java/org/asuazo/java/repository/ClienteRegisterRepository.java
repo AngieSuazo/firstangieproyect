@@ -18,6 +18,7 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
     @Override
     public List<ClienteRegister> list() {
        List<ClienteRegister> clients =new ArrayList<>();
+
        try (Statement statement = getConnection().createStatement();
             ResultSet resultSet=statement.executeQuery("SELECT c.*,b.saldo as saldo ,b.tipoCuenta as tipo FROM `clientes` as c " +
                     "inner join cuentabancaria as b ON (c.cuenta_dni=b.numeroCuenta)" ))
@@ -25,6 +26,8 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
            while (resultSet.next()){
               ClienteRegister client = createClient(resultSet);
               clients.add(client);
+
+
            }
        }
        catch (SQLException e) {
@@ -34,12 +37,14 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
     }
 
+
+
     @Override
     public ClienteRegister byId(String dni) {
        ClienteRegister client =null;
        try (PreparedStatement statement =getConnection().
                prepareStatement("SELECT c.*,b.saldo as saldo ,b.tipoCuenta as tipo FROM `clientes` as c " +
-                       "inner join cuentabancaria as b ON (c.cuenta_dni=b.numeroCuenta) WHERE dni = ?"))
+                       "inner join cuentabancaria as b ON (c.cuenta_dni=b.numeroCuenta) WHERE c.dni = ?"))
        {
            statement.setString(1,dni);
            try (ResultSet resultSet = statement.executeQuery()) {
@@ -59,52 +64,50 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
     @Override
     public void save(ClienteRegister clienteRegister) {
 
-       //HASTA AQUÍ GUARDA OK
+        String sql;
+        boolean isUpdate = clienteRegister.getDni() != null;
 
-        String sql = "INSERT INTO  clientes(dni,nombre,apellido,email,cuenta_dni) VALUES (?,?,?,?,?)";
-        try ( PreparedStatement statement =getConnection().prepareStatement(sql)){
-            statement.setString(1, clienteRegister.getDni());
-            statement.setString(2, clienteRegister.getName());
-            statement.setString(3, clienteRegister.getLastname());
-            statement.setString(4, clienteRegister.getEmail());
-            statement.setString(5,clienteRegister.getCuenta_dni().getBankAccountId());
+        // Definir la consulta SQL de acuerdo a si es un UPDATE o INSERT
+        if (isUpdate) {
+            sql = "INSERT INTO clientes (dni, nombre, apellido, email, cuenta_dni) VALUES (?, ?, ?, ?, ?)";
+        } else {
+            sql = "UPDATE clientes SET nombre = ?, apellido = ?, email = ?, cuenta_dni=? WHERE dni = ?";
+        }
+
+        try (PreparedStatement statement = getConnection().prepareStatement(sql)) {
+
+            // Asignar valores en el PreparedStatement según el tipo de operación
+            if (isUpdate) {
+                statement.setString(1, clienteRegister.getDni());
+                statement.setString(2, clienteRegister.getName());
+                statement.setString(3, clienteRegister.getLastname());
+                statement.setString(4, clienteRegister.getEmail());
+                statement.setString(5, (clienteRegister.getCuenta_dni().getBankAccountId()));
+            } else {
+                statement.setString(1, clienteRegister.getName());
+                statement.setString(2, clienteRegister.getLastname());
+                statement.setString(3, clienteRegister.getEmail());
+                statement.setString(4, clienteRegister.getCuenta_dni().getBankAccountId());
+                statement.setString(5, clienteRegister.getDni());
+            }
+
+            // Imprimir mensaje de depuración antes de la ejecución
+            System.out.println("Ejecutando statement: " + statement);
+
+            // Ejecutar la actualización
+            int rowsAffected = statement.executeUpdate();
+            System.out.println("Filas afectadas: " + rowsAffected);
 
 
-            statement.executeUpdate();
 
-
-
-//        String sql;
-//        if (clienteRegister.getDni().  ) {
-//            sql= "UPDATE clientes SET email=? WHERE dni=?, nombre=?, apellido=?";
-//
-//        } else {
-//            sql = "INSERT INTO  clientes(dni,nombre,apellido,email) VALUES (?,?,?,?)";
-//        }
-//        try( PreparedStatement statement =getConnection().prepareStatement(sql)){
-//
-//
-//            statement.setString(1, clienteRegister.getDni());
-//            statement.setString(2, clienteRegister.getName());
-//            statement.setString(3, clienteRegister.getLastname());
-//           // statement.setString(4, clienteRegister.getEmail());
-//
-//            if (clienteRegister.getDni() != null && clienteRegister.getName() != null  &&
-//                    clienteRegister.getLastname() != null ){
-//
-//                statement.setString(4, clienteRegister.getEmail());
-//            }else {
-//
-//                statement.setString(4, new String(clienteRegister.getEmail()));
-//            }
-//
-//
                }catch (SQLException throwables){
                    throwables.printStackTrace();
 
                }
 
     }
+
+
 
     @Override
     public void delete(String dni) {
@@ -128,6 +131,7 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
         return client;
     }
+
 
 
 

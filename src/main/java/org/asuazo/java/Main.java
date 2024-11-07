@@ -29,21 +29,31 @@ public class Main {
              Repository<ClienteRegister> repository =new ClienteRegisterRepository();
              System.out.println("----------------LISTAR----------------");
              repository.list().forEach(System.out::println);
+
+
              System.out.println("-----------OBTENER POR ID ---------");
              System.out.println(repository.byId("72704321"));
+
              System.out.println("-------REGISTRAR NUEVO CLIENTE--------");
              ClienteRegister client = new ClienteRegister();
-             client.setDni("72704324");
-             client.setName("juana");
+             client.setDni("72704326");
+             client.setName("juan");
              client.setLastname("lopez");
-             client.setEmail("juana@gmail.com");
+             client.setEmail("juan@gmail.com");
+
              CuentaBancaria account =new CuentaBancaria();
-             account.setBankAccountId("11111111111114");
-             account.setBalance(3.2);
+             account.setBankAccountId("11111111111115");
+             account.setBalance(3.5);
              account.setAccountType("ahorros");
+
              client.setCuenta_dni(account);
+
              repository.save(client);
+
              System.out.println("Cliente guardado con éxito");
+             repository.list().forEach(System.out::println);
+
+             System.out.println("----------------LISTAR----------------");
              repository.list().forEach(System.out::println);
 
 
