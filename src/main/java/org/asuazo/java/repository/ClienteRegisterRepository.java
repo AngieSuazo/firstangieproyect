@@ -19,8 +19,8 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
     public List<ClienteRegister> list() {
        List<ClienteRegister> clients =new ArrayList<>();
        try (Statement statement = getConnection().createStatement();
-            ResultSet resultSet=statement.executeQuery("SELECT c.*, b.numeroCuenta as cuenta, b.saldo as saldo, b.tipoCuenta as tipo " +
-                    "FROM clientes as c inner join cuenta_bancaria as b ON (b.cliente_dni=c.dni)" ))
+            ResultSet resultSet=statement.executeQuery("SELECT c.*,b.saldo as saldo ,b.tipoCuenta as tipo FROM `clientes` as c " +
+                    "inner join cuentabancaria as b ON (c.cuenta_dni=b.numeroCuenta)" ))
        {
            while (resultSet.next()){
               ClienteRegister client = createClient(resultSet);
@@ -38,8 +38,8 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
     public ClienteRegister byId(String dni) {
        ClienteRegister client =null;
        try (PreparedStatement statement =getConnection().
-               prepareStatement("SELECT c.*, b.numeroCuenta as cuenta, b.saldo as saldo, b.tipoCuenta as tipo " +
-                       "             FROM clientes as c inner join cuenta_bancaria as b ON (b.cliente_dni=c.dni) WHERE dni = ?"))
+               prepareStatement("SELECT c.*,b.saldo as saldo ,b.tipoCuenta as tipo FROM `clientes` as c " +
+                       "inner join cuentabancaria as b ON (c.cuenta_dni=b.numeroCuenta) WHERE dni = ?"))
        {
            statement.setString(1,dni);
            try (ResultSet resultSet = statement.executeQuery()) {
@@ -61,13 +61,13 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
        //HASTA AQUÍ GUARDA OK
 
-        String sql = "INSERT INTO  clientes(dni,nombre,apellido,email,bankAccountId) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO  clientes(dni,nombre,apellido,email,cuenta_dni) VALUES (?,?,?,?,?)";
         try ( PreparedStatement statement =getConnection().prepareStatement(sql)){
             statement.setString(1, clienteRegister.getDni());
             statement.setString(2, clienteRegister.getName());
             statement.setString(3, clienteRegister.getLastname());
             statement.setString(4, clienteRegister.getEmail());
-            statement.setString(5,clienteRegister.getBankAccount().getClienteDni());
+            statement.setString(5,clienteRegister.getCuenta_dni().getBankAccountId());
 
 
             statement.executeUpdate();
@@ -120,11 +120,10 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
         client.setEmail(resultSet.getString("email"));
 
         CuentaBancaria account =new CuentaBancaria();
-        account.setClienteDni(resultSet.getString("dni"));
-        account.setBankAccountId(resultSet.getString("cuenta"));
+        account.setBankAccountId(resultSet.getString("cuenta_dni"));
         account.setBalance(resultSet.getDouble("saldo"));
         account.setAccountType(resultSet.getString("tipo"));
-        client.setBankAccount(account);
+        client.setCuenta_dni(account);
 
 
         return client;

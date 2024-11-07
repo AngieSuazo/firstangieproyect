@@ -33,8 +33,7 @@ public class Main {
              System.out.println(repository.byId("72704321"));
              System.out.println("-------REGISTRAR NUEVO CLIENTE--------");
              ClienteRegister client = new ClienteRegister();
-             client.setDni("72704323");
-
+             client.setDni("72704324");
              client.setName("juana");
              client.setLastname("lopez");
              client.setEmail("juana@gmail.com");
@@ -42,7 +41,7 @@ public class Main {
              account.setBankAccountId("11111111111114");
              account.setBalance(3.2);
              account.setAccountType("ahorros");
-             client.setBankAccount(account);
+             client.setCuenta_dni(account);
              repository.save(client);
              System.out.println("Cliente guardado con éxito");
              repository.list().forEach(System.out::println);
