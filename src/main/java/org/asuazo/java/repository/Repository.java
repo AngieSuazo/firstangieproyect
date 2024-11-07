@@ -11,5 +11,5 @@ public interface Repository<T> {
 
     void save(T t);
 
-    void delete(String dni);
+
 }

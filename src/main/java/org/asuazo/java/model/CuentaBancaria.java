@@ -1,4 +1,6 @@
 package org.asuazo.java.model;
+import java.util.UUID;
+
 
 public class CuentaBancaria {
 

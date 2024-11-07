@@ -1,5 +1,6 @@
 package org.asuazo.java.repository;
 
+import com.mysql.cj.xdevapi.Client;
 import org.asuazo.java.model.ClienteRegister;
 import org.asuazo.java.model.CuentaBancaria;
 import org.asuazo.java.util.DataConnection;
@@ -7,8 +8,8 @@ import org.asuazo.java.util.DataConnection;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
-
+import java.util.regex.*;
+import java.sql.SQLException;
 
 public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
@@ -67,7 +68,7 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
         String sql;
         boolean isUpdate = clienteRegister.getDni() != null;
 
-        // Definir la consulta SQL de acuerdo a si es un UPDATE o INSERT
+
         if (isUpdate) {
             sql = "INSERT INTO clientes (dni, nombre, apellido, email, cuenta_dni) VALUES (?, ?, ?, ?, ?)";
         } else {
@@ -91,15 +92,6 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
                 statement.setString(5, clienteRegister.getDni());
             }
 
-            // Imprimir mensaje de depuración antes de la ejecución
-            System.out.println("Ejecutando statement: " + statement);
-
-            // Ejecutar la actualización
-            int rowsAffected = statement.executeUpdate();
-            System.out.println("Filas afectadas: " + rowsAffected);
-
-
-
                }catch (SQLException throwables){
                    throwables.printStackTrace();
 
@@ -109,13 +101,8 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
 
 
-    @Override
-    public void delete(String dni) {
-
-    }
-
     private ClienteRegister createClient(ResultSet resultSet) throws SQLException {
-       //TODO: Revisar validaciones de DNI único y email en formato válido  (usar decorator?) todos los campos son obligatorios
+
         ClienteRegister client =new ClienteRegister();
         client.setDni(resultSet.getString("dni"));
         client.setName(resultSet.getString("nombre"));
@@ -132,8 +119,28 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
         return client;
     }
 
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9+_.-]+@(.+)$"
+    );
 
 
+    private static boolean isEmailValid(String email) {
+        Matcher matcher = EMAIL_PATTERN.matcher(email);
+        return matcher.matches();
+    }
+
+
+    private void isDniUnique(SQLException error) throws Exception {
+        // Código de error para PRIMARY KEY DUPLICATED
+        if ("1062".equals(error.getSQLState())) {
+
+            throw new IllegalArgumentException(error.getMessage());
+        }
+
+        System.out.println(error);
+
+        throw new RuntimeException("DNI duplicado");
+    }
 
 
 
