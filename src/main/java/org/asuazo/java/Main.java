@@ -1,6 +1,7 @@
 package org.asuazo.java;
 
 import org.asuazo.java.model.ClienteRegister;
+import org.asuazo.java.model.CuentaBancaria;
 import org.asuazo.java.repository.ClienteRegisterRepository;
 import org.asuazo.java.repository.Repository;
 import org.asuazo.java.util.DataConnection;
@@ -29,13 +30,19 @@ public class Main {
              System.out.println("----------------LISTAR----------------");
              repository.list().forEach(System.out::println);
              System.out.println("-----------OBTENER POR ID ---------");
-             System.out.println(repository.byId("72704323"));
+             System.out.println(repository.byId("72704321"));
              System.out.println("-------REGISTRAR NUEVO CLIENTE--------");
              ClienteRegister client = new ClienteRegister();
-             client.setDni("72704324");
-             client.setName("cecilia");
-             client.setLastname("castillo");
-             client.setEmail("cecilia@gmail.com");
+             client.setDni("72704323");
+
+             client.setName("juana");
+             client.setLastname("lopez");
+             client.setEmail("juana@gmail.com");
+             CuentaBancaria account =new CuentaBancaria();
+             account.setBankAccountId("11111111111114");
+             account.setBalance(3.2);
+             account.setAccountType("ahorros");
+             client.setBankAccount(account);
              repository.save(client);
              System.out.println("Cliente guardado con éxito");
              repository.list().forEach(System.out::println);

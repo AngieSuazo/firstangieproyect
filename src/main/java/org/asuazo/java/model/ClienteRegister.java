@@ -6,12 +6,14 @@ public class ClienteRegister {
     private String name;
     private String lastname;
     private String email;
+    private CuentaBancaria cliente_dni;
 
-    public ClienteRegister(String dni, String name, String lastname, String email) {
+    public ClienteRegister(String dni, String name, String lastname, String email, CuentaBancaria cliente_dni) {
         this.dni = dni;
         this.name = name;
         this.lastname = lastname;
         this.email = email;
+        this.cliente_dni = cliente_dni;
     }
 
     @Override
@@ -22,7 +24,13 @@ public class ClienteRegister {
                 " | " +
                 lastname +
                 " | " +
-                 email;
+                 email +
+                " | " +
+                cliente_dni.getBankAccountId() +
+                 " | " +
+                cliente_dni.getBalance() +
+                " | " +
+                cliente_dni.getAccountType();
     }
 
     public ClienteRegister() {
@@ -58,5 +66,13 @@ public class ClienteRegister {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public CuentaBancaria getBankAccount() {
+        return cliente_dni;
+    }
+
+    public void setBankAccount(CuentaBancaria cliente_dni) {
+        this.cliente_dni = cliente_dni;
     }
 }

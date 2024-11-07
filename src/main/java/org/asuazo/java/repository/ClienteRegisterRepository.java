@@ -1,11 +1,14 @@
 package org.asuazo.java.repository;
 
 import org.asuazo.java.model.ClienteRegister;
+import org.asuazo.java.model.CuentaBancaria;
 import org.asuazo.java.util.DataConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
@@ -16,7 +19,8 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
     public List<ClienteRegister> list() {
        List<ClienteRegister> clients =new ArrayList<>();
        try (Statement statement = getConnection().createStatement();
-            ResultSet resultSet=statement.executeQuery("SELECT * FROM clientes"))
+            ResultSet resultSet=statement.executeQuery("SELECT c.*, b.numeroCuenta as cuenta, b.saldo as saldo, b.tipoCuenta as tipo " +
+                    "FROM clientes as c inner join cuenta_bancaria as b ON (b.cliente_dni=c.dni)" ))
        {
            while (resultSet.next()){
               ClienteRegister client = createClient(resultSet);
@@ -34,7 +38,8 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
     public ClienteRegister byId(String dni) {
        ClienteRegister client =null;
        try (PreparedStatement statement =getConnection().
-               prepareStatement("SELECT * FROM clientes WHERE dni = ?"))
+               prepareStatement("SELECT c.*, b.numeroCuenta as cuenta, b.saldo as saldo, b.tipoCuenta as tipo " +
+                       "             FROM clientes as c inner join cuenta_bancaria as b ON (b.cliente_dni=c.dni) WHERE dni = ?"))
        {
            statement.setString(1,dni);
            try (ResultSet resultSet = statement.executeQuery()) {
@@ -53,29 +58,47 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
 
     @Override
     public void save(ClienteRegister clienteRegister) {
-        String sql;
-        if (clienteRegister.getDni() != null  ) {
-            sql= "UPDATE clientes SET email=? WHERE dni=?";
 
-        } else {
-            sql = "INSERT INTO  clientes(nombre,apellido,email) VALUES (?,?,?)";
-        }
-        try( PreparedStatement statement =getConnection().prepareStatement(sql)){
+       //HASTA AQUÍ GUARDA OK
 
-
-            //statement.setString(1, clienteRegister.getName());
-
-
-            if (clienteRegister.getDni() != null ){
-                statement.setString(1, clienteRegister.getDni());
-                statement.setString(2, clienteRegister.getLastname());
-            }else {
-                statement.setString(3, clienteRegister.getEmail());
-            }
+        String sql = "INSERT INTO  clientes(dni,nombre,apellido,email,bankAccountId) VALUES (?,?,?,?,?)";
+        try ( PreparedStatement statement =getConnection().prepareStatement(sql)){
+            statement.setString(1, clienteRegister.getDni());
+            statement.setString(2, clienteRegister.getName());
+            statement.setString(3, clienteRegister.getLastname());
+            statement.setString(4, clienteRegister.getEmail());
+            statement.setString(5,clienteRegister.getBankAccount().getClienteDni());
 
 
             statement.executeUpdate();
 
+
+
+//        String sql;
+//        if (clienteRegister.getDni().  ) {
+//            sql= "UPDATE clientes SET email=? WHERE dni=?, nombre=?, apellido=?";
+//
+//        } else {
+//            sql = "INSERT INTO  clientes(dni,nombre,apellido,email) VALUES (?,?,?,?)";
+//        }
+//        try( PreparedStatement statement =getConnection().prepareStatement(sql)){
+//
+//
+//            statement.setString(1, clienteRegister.getDni());
+//            statement.setString(2, clienteRegister.getName());
+//            statement.setString(3, clienteRegister.getLastname());
+//           // statement.setString(4, clienteRegister.getEmail());
+//
+//            if (clienteRegister.getDni() != null && clienteRegister.getName() != null  &&
+//                    clienteRegister.getLastname() != null ){
+//
+//                statement.setString(4, clienteRegister.getEmail());
+//            }else {
+//
+//                statement.setString(4, new String(clienteRegister.getEmail()));
+//            }
+//
+//
                }catch (SQLException throwables){
                    throwables.printStackTrace();
 
@@ -95,6 +118,22 @@ public class ClienteRegisterRepository implements Repository<ClienteRegister>{
         client.setName(resultSet.getString("nombre"));
         client.setLastname(resultSet.getString("apellido"));
         client.setEmail(resultSet.getString("email"));
+
+        CuentaBancaria account =new CuentaBancaria();
+        account.setClienteDni(resultSet.getString("dni"));
+        account.setBankAccountId(resultSet.getString("cuenta"));
+        account.setBalance(resultSet.getDouble("saldo"));
+        account.setAccountType(resultSet.getString("tipo"));
+        client.setBankAccount(account);
+
+
         return client;
     }
+
+
+
+
+
+
+
 }
